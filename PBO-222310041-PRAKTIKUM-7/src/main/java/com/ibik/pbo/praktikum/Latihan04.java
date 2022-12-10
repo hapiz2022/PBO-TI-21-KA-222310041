@@ -3,8 +3,14 @@ package com.ibik.pbo.praktikum;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.PdfPTable;
 
 public class Latihan04 {
 
@@ -20,7 +26,7 @@ public class Latihan04 {
 		  frame.setVisible(true);
 		}
 
-	private static void placeComponents(JPanel panel, JFrame frame) {
+	private static void placeComponents(JPanel panel, final JFrame frame) {
 		panel.setLayout(null);
 		
 		JLabel titleLabel = new JLabel("FORM PENILAIAN MATAKULIAH PBO");
@@ -157,6 +163,58 @@ public class Latihan04 {
 		
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menu = new JMenu("File");
+		JMenuItem saveToPdfItem = new JMenuItem("Save to PDF");
+		saveToPdfItem.addActionListener(new ActionListener() {
+		  public void actionPerformed(ActionEvent e) {
+			    // show a file chooser dialog to prompt the user for a filename
+			    JFileChooser fileChooser = new JFileChooser();
+			    fileChooser.setDialogTitle("Save to PDF");
+			    fileChooser.setFileFilter(new FileNameExtensionFilter("PDF Files", "pdf"));
+			    int userSelection = fileChooser.showSaveDialog(frame);
+
+			    // check if the user selected a file
+			    if (userSelection == JFileChooser.APPROVE_OPTION) {
+			      File fileToSave = fileChooser.getSelectedFile();
+
+			      // create the PDF document
+			      try {
+			    	  // create the PDF document
+			    	  Document document = new Document();
+
+			    	  // create a writer to write the PDF document
+			    	  PdfWriter.getInstance(document, new FileOutputStream(fileToSave));
+
+			    	  // open the document
+			    	  document.open();
+
+			    	  // add the data from the JTable to the PDF document
+			    	  PdfPTable pdfTable = new PdfPTable(table.getColumnCount());
+			    	  for (int i = 0; i < table.getColumnCount(); i++) {
+			    	    pdfTable.addCell(table.getColumnName(i));
+			    	  }
+			    	  for (int i = 0; i < table.getRowCount(); i++) {
+			    	    for (int j = 0; j < table.getColumnCount(); j++) {
+			    	      pdfTable.addCell(table.getValueAt(i, j).toString());
+			    	    }
+			    	  }
+			    	  document.add(pdfTable);
+
+			    	  // close the document
+			    	  document.close();
+
+			    	  // show a success message
+			    	  JOptionPane.showMessageDialog(null, "Data saved to PDF successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+			    	} catch (Exception ex) {
+			    	  // show an error message
+			    	  JOptionPane.showMessageDialog(null, "Error saving data to PDF: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			    	}
+			    }
+		  }
+		});
+		menu.add(saveToPdfItem);
+		menuBar.add(menu);
+		frame.setJMenuBar(menuBar);
+		
 		JMenuItem menuItem = new JMenuItem("Exit");
 		menu.add(menuItem);
 		menuBar.add(menu);
